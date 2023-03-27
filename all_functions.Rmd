@@ -1,0 +1,19 @@
+
+
+
+
+
+
+
+# Main MI and correlation function
+```{r}
+correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_threshold){
+  
+  
+  
+  
+  return(features_list, reduced_X_train_final)
+  
+}
+```
+

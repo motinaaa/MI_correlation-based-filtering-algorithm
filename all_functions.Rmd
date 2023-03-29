@@ -63,14 +63,57 @@ correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_thres
   
   
   
+  # Get the names of columns in reduced_X_train_one and make a list by them
+  features_list = t(t(colnames(reduced_X_train_one)))
+  # Get the number of the features (columns names) in the list
+  num_features = length(features_list)
   
   
   
   
+  
+  for ( e in 1:num_features){# e is the index of the features in feature list starting from first feature
+    q = e + 1   # q is the index of the features which is next (after) to the feature with index e
+    while (q <= num_features){# while loop to check correlation between the pairs
+      if (abs(cor(reduced_X_train_one[, e], reduced_X_train_one[, q])) > cor_threshold){
+        q = q + 1 # update q
+        num_features = num_features - 1 # decrease the num_features if the threshold is passed
+        for (i in q-1:num_features){
+          features_list[i] = features_list[i + 1] # Update the feature list
+        }
+        features_list = features_list[-(num_features + 1)] # drop the last elemnt in the faeture list
+        
+      }else{
+        q = q + 1 # Update q
+        
+      }
+      
+    }
+    e = e + 1 # Update e
+  }
+  
+  
+  
+  # Select the columns in the final feature list from the data set
+  reduced_X_train_final = reduced_X_train_one[, features_list] 
   
   
   return(features_list, reduced_X_train_final)
   
 }
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

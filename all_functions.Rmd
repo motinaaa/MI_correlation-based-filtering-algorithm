@@ -6,10 +6,59 @@
 
 # Packages
 ```{r}
+#library(tidyverse)
+library(ggplot2)
+library(caret)
+library(randomForest)
 library(mpmi)
 ```
 
 
+
+
+# Read the X_train data
+```{r}
+X_train = read.csv(file = 'C:/Users/parvi/Dropbox/Stat 585-iastate/Project/MI_correlation-based-filtering-algorithm/X_train_data_stat585.csv', header = FALSE)
+
+
+head(X_train)
+dim(X_train)
+```
+
+
+
+# Read the y_train data
+```{r}
+y_train = read.csv(file = 'C:/Users/parvi/Dropbox/Stat 585-iastate/Project/MI_correlation-based-filtering-algorithm/y_train_data_stat585.csv', header = FALSE)
+
+
+head(y_train)
+dim(y_train)
+```
+
+
+
+
+
+# Read the X_test data
+```{r}
+X_test = read.csv(file = 'C:/Users/parvi/Dropbox/Stat 585-iastate/Project/MI_correlation-based-filtering-algorithm/X_test_data_stat585.csv', header = FALSE)
+
+
+head(X_test)
+dim(X_test)
+```
+
+
+
+# Read the y_test data
+```{r}
+y_test = read.csv(file = 'C:/Users/parvi/Dropbox/Stat 585-iastate/Project/MI_correlation-based-filtering-algorithm/y_test_data_stat585.csv', header = FALSE)
+
+
+head(y_test)
+dim(y_test)
+```
 
 
 
@@ -105,7 +154,10 @@ correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_thres
 
 
 
-
+# Test the function
+```{r}
+#correlation_based_filtering(X_train, y_train, MI_threshold = 0.0001, cor_threshold = 0.95)
+```
 
 
 

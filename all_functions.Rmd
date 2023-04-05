@@ -103,7 +103,7 @@ correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_thres
   new_mmi_scores_output = new_mmi_output$mi
   final_MI_scores = as.vector(new_mmi_scores_output)
   # Sort the final_MI_scores
-  inds = order(final_MI_scores, decreaseing = FALSE)
+  inds = order(final_MI_scores, decreasing = FALSE)
   # Order the reduced X_train based on ascending order of MI scores of features with y_train
   reduced_X_train_one = reduced_X_train_one[, inds]
   
@@ -114,6 +114,7 @@ correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_thres
   
   # Get the names of columns in reduced_X_train_one and make a list by them
   features_list = t(t(colnames(reduced_X_train_one)))
+  features_list = as.vector(features_list)
   # Get the number of the features (columns names) in the list
   num_features = length(features_list)
   
@@ -127,10 +128,10 @@ correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_thres
       if (abs(cor(reduced_X_train_one[, e], reduced_X_train_one[, q])) > cor_threshold){
         q = q + 1 # update q
         num_features = num_features - 1 # decrease the num_features if the threshold is passed
-        for (i in q-1:num_features){
-          features_list[i] = features_list[i + 1] # Update the feature list
+        for (i in (q-2):num_features){
+          features_list[i] = features_list[(i+1)] # Update the feature list
         }
-        features_list = features_list[-(num_features + 1)] # drop the last elemnt in the faeture list
+        features_list = features_list[-(num_features + 1) ] # drop the last elemnt in the faeture list
         
       }else{
         q = q + 1 # Update q
@@ -147,7 +148,7 @@ correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_thres
   reduced_X_train_final = reduced_X_train_one[, features_list] 
   
   
-  return(features_list, reduced_X_train_final)
+  return(reduced_X_train_final)
   
 }
 ```
@@ -156,7 +157,7 @@ correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_thres
 
 # Test the function
 ```{r}
-#correlation_based_filtering(X_train, y_train, MI_threshold = 0.0001, cor_threshold = 0.95)
+correlation_based_filtering(X_train, y_train, MI_threshold = 0.01, cor_threshold = 0.95)
 ```
 
 

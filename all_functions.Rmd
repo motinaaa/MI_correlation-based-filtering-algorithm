@@ -22,7 +22,6 @@ X_train = read.csv(file = 'C:/Users/parvi/Dropbox/Stat 585-iastate/Project/MI_co
 
 
 head(X_train)
-dim(X_train)
 ```
 
 
@@ -33,7 +32,6 @@ y_train = read.csv(file = 'C:/Users/parvi/Dropbox/Stat 585-iastate/Project/MI_co
 
 
 head(y_train)
-dim(y_train)
 ```
 
 
@@ -46,7 +44,6 @@ X_test = read.csv(file = 'C:/Users/parvi/Dropbox/Stat 585-iastate/Project/MI_cor
 
 
 head(X_test)
-dim(X_test)
 ```
 
 
@@ -57,7 +54,6 @@ y_test = read.csv(file = 'C:/Users/parvi/Dropbox/Stat 585-iastate/Project/MI_cor
 
 
 head(y_test)
-dim(y_test)
 ```
 
 
@@ -131,7 +127,7 @@ correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_thres
         for (i in (q-2):num_features){
           features_list[i] = features_list[(i+1)] # Update the feature list
         }
-        features_list = features_list[-(num_features + 1) ] # drop the last elemnt in the faeture list
+        features_list = features_list[-(num_features + 1) ] # drop the last element in the feature list
         
       }else{
         q = q + 1 # Update q
@@ -147,23 +143,38 @@ correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_thres
   # Select the columns in the final feature list from the data set
   reduced_X_train_final = reduced_X_train_one[, features_list] 
   
+  # Make a list by features_list and final data set
+  final_list = list(x1 = reduced_X_train_final, x2 = features_list)
   
-  return(reduced_X_train_final)
+  return(final_list)
   
 }
 ```
 
 
 
-# Test the function
+# Test the function, we should implement the above filtering function
 ```{r}
-correlation_based_filtering(X_train, y_train, MI_threshold = 0.01, cor_threshold = 0.95)
+function_output = correlation_based_filtering(X_train, y_train, MI_threshold = 0.01, cor_threshold = 0.95)
 ```
 
 
 
 
+# Check the output "final_list" for x1
+```{r}
+function_output$x1
+```
 
+
+
+# Check the output "final_list" for x2
+```{r}
+function_output$x2
+```
+
+
+# Select the selected features in "reduced_X_train_final" from the original X_test
 
 
 

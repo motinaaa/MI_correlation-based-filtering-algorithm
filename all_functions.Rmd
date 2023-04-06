@@ -11,6 +11,7 @@ library(ggplot2)
 library(caret)
 library(randomForest)
 library(mpmi)
+library(dataPreparation)
 ```
 
 
@@ -63,18 +64,20 @@ head(y_test)
 
 # Main MI and correlation function
 ```{r}
-correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_threshold){
+correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_threshold, X_test){
   
   # Inputs: 
-  # 1) X_train
+  # 1) X_train (Original X_train)
   # 2) y_train
   # 3) MI_threshold which is a threshold for the mutual information score between the features (X_train) and the response variable (y_train)
   # 4) cor_threshold which is a threshold for the linear correlation between the features (X_train)
+  # 5) X_test (Original X_test)
   
   
   # Output: 
-  # 1) features_list which is the list of selected features
-  # 2) reduced_X_train_final which is the reduced X_train 
+  # 1) $x1 = reduced_X_train which is the reduced X_train
+  # 2) $x2 = reduced_X_test which is the reduced X_test
+  # 3) $x3 = features_list which is the list of selected features
   
   
   # Get the MI scores between the features (continuous) in X_train and y_train (discrete)
@@ -140,41 +143,132 @@ correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_thres
   
   
   
-  # Select the columns in the final feature list from the data set
-  reduced_X_train_final = reduced_X_train_one[, features_list] 
+  # Select the columns in the final feature list from the train data set
+  reduced_X_train = reduced_X_train_one[, features_list] 
   
-  # Make a list by features_list and final data set
-  final_list = list(x1 = reduced_X_train_final, x2 = features_list)
   
-  return(final_list)
+  # Select the columns in the final feature list from the test data set
+  reduced_X_test = X_test[, features_list]
+  
+  # Make a list by features_list and final train and test data set
+  output_filtering_list = list(x1 = reduced_X_train, x2 = reduced_X_test, x3 = features_list)
+  
+  return(output_filtering_list)
   
 }
 ```
 
 
 
-# Test the function, we should implement the above filtering function
+# Test the main filtering function, we should implement the above filtering function
 ```{r}
-function_output = correlation_based_filtering(X_train, y_train, MI_threshold = 0.01, cor_threshold = 0.95)
+filtering_function_output = correlation_based_filtering(X_train, y_train, MI_threshold = 0.01, cor_threshold = 0.95, X_test)
 ```
 
 
 
 
-# Check the output "final_list" for x1
+# Check the output "filtering_output_function" for x1
 ```{r}
-function_output$x1
+reduced_X_train = filtering_function_output$x1
+reduced_X_train
 ```
 
 
 
-# Check the output "final_list" for x2
+# Check the output "filtering_output_function" for x2
 ```{r}
-function_output$x2
+reduced_X_test = filtering_function_output$x2
+reduced_X_test
 ```
 
 
-# Select the selected features in "reduced_X_train_final" from the original X_test
+
+# Check the output "filtering_output_function" for x3
+```{r}
+features_list = filtering_function_output$x3
+features_list
+```
+
+
+
+
+
+
+
+
+# Standardization of the train and test set function. This function gets the train set, fit the standardizer to the train set, then it applies the fitted standardizer to the test set.
+```{r}
+scaling_train_test = function(X_train, X_test){
+  
+  
+  # Inputs: 
+  # 1) X_train (in this project X_train is the reduced_X_train)
+  # 2) X_test (in this project X_test is the reduced_X_test)
+  
+  
+  
+  # Output: 
+  # 1) $y1 = scaled_X_train (in this project scaled_X_train is the standardized reduced_X_train)
+  # 2) $y2 = scaled_X_test (in this project scaled_X_train is the standardized reduced_X_train)
+  
+  
+
+  
+  
+  # Prepare the scaling function which will be fitted n the train set
+  scaling_fit = build_scales(data_set = X_train, cols = "auto", verbose = TRUE)
+  # Get the new X_train
+  scaled_X_train = fast_scale(data_set = X_train, scales = scaling_fit, verbose = TRUE)
+  # Apply the scaling_fit function (which have been fitted to the train set) to the test set
+  scaled_X_test = fast_scale(data_set = X_test, scales = scaling_fit, verbose = TRUE)
+  
+  
+  
+  
+  # Make a list by X_train and X_test
+  output_standardization_list = list(y1 = scaled_X_train, y2 = scaled_X_test)
+  
+  
+  return(output_standardization_list)
+}
+```
+
+
+
+
+
+
+# Test the standardization function, we should implement the above standardization function
+```{r}
+scaling_function_output = scaling_train_test(reduced_X_train, reduced_X_test)
+```
+
+
+
+
+
+# Check the output "scaling_function_output" for y1
+```{r}
+scaled_X_train = scaling_function_output$y1
+scaled_X_train
+```
+
+
+
+
+# Check the output "scaling_function_output" for y2
+```{r}
+scaled_X_test = scaling_function_output$y2
+scaled_X_test
+```
+
+
+
+
+
+
+
 
 
 

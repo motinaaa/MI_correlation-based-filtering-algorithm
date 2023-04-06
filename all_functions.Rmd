@@ -12,6 +12,13 @@ library(caret)
 library(randomForest)
 library(mpmi)
 library(dataPreparation)
+library(readr)
+library(tidymodels)
+library(recipes)
+library(rsample)
+library(parsnip)
+library(workflows)
+library(glmnet)
 ```
 
 
@@ -262,6 +269,156 @@ scaled_X_train
 scaled_X_test = scaling_function_output$y2
 scaled_X_test
 ```
+
+
+
+
+# Add column name to the y_train
+```{r}
+colnames(y_train)[1] = "class"
+head(y_train)
+```
+
+
+# Add column name to the y_test
+```{r}
+colnames(y_test)[1] = "class"
+head(y_test)
+```
+
+
+
+
+
+# Do the cbind for the train data set
+```{r}
+data_train = cbind(scaled_X_train, y_train)
+head(data_train)
+```
+
+# Transfer from number to factor in class
+```{r}
+data_train$class = as.factor(data_train$class)
+```
+
+
+
+
+
+
+
+# Do the cbind for the test data set
+```{r}
+data_test = cbind(scaled_X_test, y_test)
+head(data_test)
+```
+
+
+
+# Transfer from number to factor in class
+```{r}
+data_test$class = as.factor(data_test$class)
+```
+
+
+
+
+
+# Classification part by Logistic Regression
+# Define the logistic regression model with penalty and mixture hyperparameters
+```{r}
+#Define 
+log_reg = logistic_reg(mixture = tune(), penalty = tune(), engine = "glmnet")
+
+# Define the grid search for the hyperparameters
+grid = grid_regular(mixture(), penalty(), levels = c(mixture = 4, penalty = 3))
+
+
+# Define the workflow for the model
+log_reg_wf = workflow() %>%
+  add_model(log_reg) %>%
+  add_formula(class ~ .)
+
+
+
+# Define the resampling method for the grid search
+folds = vfold_cv(data_train, v = 5)
+
+
+
+# Tune the hyperparameters using the grid search
+log_reg_tuned = tune_grid(
+  log_reg_wf,
+  resamples = folds,
+  grid = grid,
+  control = control_grid(save_pred = TRUE)
+)
+
+
+
+select_best(log_reg_tuned, metric = "roc_auc")
+
+
+```
+
+
+# Fit and test the model
+```{r}
+# Fit the model using the optimal hyperparameters
+log_reg_final = logistic_reg(penalty = 1e-10, mixture = 0) %>%
+                 set_engine("glmnet") %>%
+                 set_mode("classification") %>%
+                 fit(class~., data = data_train)
+
+# Evaluate the model performance on the testing set
+pred_class <- predict(log_reg_final,
+                      new_data = data_test,
+                      type = "class")
+results <- data_test %>%
+  select(class) %>%
+  bind_cols(pred_class)
+
+# Create confusion matrix
+conf_mat(results, truth = class,
+         estimate = .pred_class)
+```
+
+
+
+
+# Precision
+```{r}
+precision(results, truth = class,
+          estimate = .pred_class)
+```
+
+
+# recall
+```{r}
+recall(results, truth = class,
+          estimate = .pred_class)
+```
+
+
+
+# Accuracy
+```{r}
+accuracy(results, truth = class,
+          estimate = .pred_class)
+```
+
+
+# Sensitivity
+```{r}
+sensitivity(results, truth = class,
+          estimate = .pred_class)
+```
+
+
+
+
+
+
 
 
 

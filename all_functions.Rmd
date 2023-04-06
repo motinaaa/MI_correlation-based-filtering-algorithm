@@ -417,14 +417,28 @@ sensitivity(results, truth = class,
 
 
 
+# Get the coefficients greater than 0.3
+```{r}
+coeff <- tidy(log_reg_final) %>% 
+  arrange(desc(abs(estimate))) %>% 
+  filter(abs(estimate) > 0.3)
+```
+
+
+
+```{r}
+coeff
+```
 
 
 
 
 
+```{r}
+ggplot(coeff, aes(x = term, y = estimate, fill = term)) + geom_col() + coord_flip()
 
-
-
+ggplot
+```
 
 
 

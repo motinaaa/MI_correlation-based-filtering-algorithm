@@ -511,10 +511,44 @@ fig <- fig %>% layout(scene = list(xaxis = list(title = 'MI_threshold'),
 fig
 ```
 
+# 3D_plot for the relation of MI_threshold, cor_threshold and the number of chosen features
+```{r}
+MI_cor_plot = function(MI_threshold_LB,MI_threshold_UB,MI_threshold_step,cor_threshold_LB,cor_threshold_UB,cor_threshold_step,X_train,y_train,X_test){
+  
+cor_threshold_values = seq(cor_threshold_LB, cor_threshold_UB, by=cor_threshold_step)
+MI_threshold_values = seq(MI_threshold_LB, MI_threshold_UB, by=MI_threshold_step)
+
+plot_input = data.frame(matrix(ncol = 3, nrow = (length(cor_threshold_values)*length(MI_threshold_values))))
+
+#provide column names
+colnames(plot_input) <- c('cor_threshold', 'MI_threshold','No. features after reduction')
+
+output = list()
+
+j = 1
+
+for (i in cor_threshold_values){
+  
+    for (f in MI_threshold_values){
+     
+       plot_input [j,1] = i
+       plot_input [j,2] = f
+       output= correlation_based_filtering(X_train, y_train, f, i, X_test)
+       plot_input [j,3] = length(output$x3)
+       j= j + 1
+    }
+}
+  
+return (plot_input)  
+  
+}
+```
 
 
-
-
+```{r, warning=FALSE}
+test_plot_2 = MI_cor_plot(0.01, 0.02, 0.01,0.9,0.95,0.05, X_train, y_train, X_test)
+test_plot_2
+```
 
 
 

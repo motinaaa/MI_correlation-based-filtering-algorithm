@@ -46,6 +46,7 @@ usethis::create_package(
       ))
   )
 )
+
 usethis::use_mit_license(copyright_holder = "A. Anisi")
 usethis::use_package("ggplot2")
 usethis::use_package("caret")
@@ -53,7 +54,7 @@ usethis::use_package("randomForest")
 usethis::use_package("mpmi")
 usethis::use_package("dataPreparation")
 usethis::use_package("readr")
-usethis::use_package("tidymodels")
+#usethis::use_package("tidymodels")
 usethis::use_package("recipes")
 usethis::use_package("rsample")
 usethis::use_package("parsnip")
@@ -334,15 +335,29 @@ return (plot_input)
 
 ### Create a Data Set
 
-To create a dataset we should do a call. The rest of the code will run to create documentation
-
+To create a dataset we should do a call. The rest of the code will run to create documentation.
 ```{r}
 
-X_train = read.csv(file = '../data/X_train_data_stat585.csv', header = FALSE)
-X_test = read.csv(file = '../data/X_test_data_stat585.csv', header = FALSE)
-y_train = read.csv(file = '../data/y_train_data_stat585.csv', header = FALSE)
-y_test = read.csv(file = '../data/y_test_data_stat585.csv', header = FALSE)
+X_train = list.files("../data",
+                           pattern="X_train",
+                           full.names=T)# read only ending in csv
+X_test = list.files("../data",
+                           pattern="X_test",
+                           full.names=T)# read only ending in csv
+y_train = list.files("../data",
+                           pattern="y_train",
+                           full.names=T)# read only ending in csv
+y_test = list.files("../data",
+                           pattern="y_test",
+                           full.names=T)# read only ending in csv
 
+
+# reading data from csv files
+X_train <-purrr::map_df(X_train,~readr::read_csv(.,show_col_types = F))
+X_test <-purrr::map_df(X_test,~readr::read_csv(.,show_col_types = F))
+y_train <-purrr::map_df(y_train,~readr::read_csv(.,show_col_types = F))
+y_test <-purrr::map_df(y_test,~readr::read_csv(.,show_col_types = F))
+  
 ```
 
 ```{r}
@@ -350,8 +365,9 @@ usethis::use_data(X_train)
 usethis::use_data(X_test)
 usethis::use_data(y_train)
 usethis::use_data(y_test)
-
 ```
+
+
 And we'll need to document the data set as well and describe it:
 
 ```{r}
@@ -363,9 +379,6 @@ And we'll need to document the data set as well and describe it:
 #' }
 #' @source
 #' 
-#' @examples
-#' View(X_train)
-#' dim(X_train)
 "X_train"
 ```
 
@@ -378,9 +391,6 @@ And we'll need to document the data set as well and describe it:
 #' }
 #' @source
 #' 
-#' @examples
-#' View(X_test)
-#' dim(X_test)
 "X_test"
 ```
 
@@ -393,9 +403,6 @@ And we'll need to document the data set as well and describe it:
 #' }
 #' @source
 #' 
-#' @examples
-#' View(y_train)
-#' dim(y_train)
 "y_train"
 ```
 
@@ -408,9 +415,6 @@ And we'll need to document the data set as well and describe it:
 #' }
 #' @source
 #' 
-#' @examples
-#' View(y_test)
-#' dim(y_test)
 "y_test"
 ```
 
@@ -420,9 +424,9 @@ We finish by running commands that will document, build, and install the package
 
 ```{r}
 litr::document() # <-- use instead of devtools::document()
-# devtools::build()
-# devtools::install()
-# devtools::check(document = FALSE)
+devtools::build()
+devtools::install()
+devtools::check(document = FALSE)
 ```
 Footer
 © 2023 GitHub, Inc.

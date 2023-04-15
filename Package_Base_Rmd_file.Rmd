@@ -61,7 +61,8 @@ usethis::use_package("parsnip")
 usethis::use_package("workflows")
 usethis::use_package("glmnet")
 usethis::use_package("plotly")
-
+usethis::use_package("devtools")
+usethis::use_package("purrr")
 ```
 
 
@@ -73,9 +74,8 @@ usethis::use_package("plotly")
 ```{r}
 #' Function correlation_based_filtering
 #' 
-#' @importFrom utils read.csv
 #' 
-#' @import mpmi
+#' @importfrom mpmi mmi
 #' 
 #' @param X_train features in training data (Original X_train)
 #' @param y_train class variable for training set
@@ -96,7 +96,7 @@ correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_thres
   
   
   # Get the MI scores between the features (continuous) in X_train and y_train (discrete)
-  mmi_output = mmi(cts = X_train, disc = y_train)
+  mmi_output = mpmi::mmi(cts = X_train, disc = y_train)
   mmi_scores_output = mmi_output$mi
   MI_scores = as.vector(mmi_scores_output)
   
@@ -113,7 +113,7 @@ correlation_based_filtering = function(X_tarin, y_train, MI_threshold, cor_thres
   
   
   # Get the MI scores between the remained features (continuous) and the y_train (discrete)
-  new_mmi_output = mmi(cts = reduced_X_train_one, disc = y_train)
+  new_mmi_output = mpmi::mmi(cts = reduced_X_train_one, disc = y_train)
   new_mmi_scores_output = new_mmi_output$mi
   final_MI_scores = as.vector(new_mmi_scores_output)
   # Sort the final_MI_scores
@@ -179,7 +179,8 @@ Standardization of the train and test set function. This function gets the train
 ```{r}
 #' Function scaling_train_test
 #' 
-#' @importFrom
+#' @importFrom datapreparation build_scales
+#' @importFrom datapreparation fast_scale
 #'
 #' @param X_train  features in training data (in this project X_train is the reduced_X_train)
 #' @param X_test features in test data (in this project X_test is the reduced_X_test)
@@ -200,11 +201,11 @@ scaling_train_test = function(X_train, X_test){
   
   
   # Prepare the scaling function which will be fitted n the train set
-  scaling_fit = build_scales(data_set = X_train, cols = "auto", verbose = TRUE)
+  scaling_fit = datapreparation::build_scales(data_set = X_train, cols = "auto", verbose = TRUE)
   # Get the new X_train
-  scaled_X_train = fast_scale(data_set = X_train, scales = scaling_fit, verbose = TRUE)
+  scaled_X_train = datapreparation::fast_scale(data_set = X_train, scales = scaling_fit, verbose = TRUE)
   # Apply the scaling_fit function (which have been fitted to the train set) to the test set
-  scaled_X_test = fast_scale(data_set = X_test, scales = scaling_fit, verbose = TRUE)
+  scaled_X_test = datapreparation::fast_scale(data_set = X_test, scales = scaling_fit, verbose = TRUE)
   
   
   
@@ -223,7 +224,8 @@ Now, we want to create two functions for the visualization purposes. The first o
 ```{r}
 #' Function MI_analysis_plot
 #' 
-#' @importFrom
+#' @importFrom mpmi mmi
+#' @importFrom plotly plot_ly
 #'
 #' @param MI_threshold_LB  which is the lower bound for the selected MI values
 #' @param MI_threshold_UB which is the upper bound for the selected MI values
@@ -255,12 +257,12 @@ for (i in MI_threshold_values){
        plot_input [j,1] = i
        output= correlation_based_filtering(X_train, y_train, i, cor_threshold, X_test)
        plot_input [j,2] = length(output$x3)
-       mmi_output = mmi(cts = output$x1, disc = y_train)
+       mmi_output = mpmi::mmi(cts = output$x1, disc = y_train)
        plot_input [j,3] = mean(as.vector(mmi_output$mi))
        j= j + 1
    }
 
-fig <- plot_ly(test_plot, x = test_plot$MI_threshold, y = test_plot$`No. features after reduction`, z = test_plot$Mean_MI, colors = c('#0C4B8E'))
+fig <- plotly::plot_ly(test_plot, x = test_plot$MI_threshold, y = test_plot$`No. features after reduction`, z = test_plot$Mean_MI, colors = c('#0C4B8E'))
 fig <- fig %>% add_markers()
 fig <- fig %>% layout(scene = list(xaxis = list(title = 'MI_threshold'),
                      yaxis = list(title = 'No. features'),
@@ -278,7 +280,7 @@ Second plot shows the relationship between selected MI_thresholds, selected cor_
 ```{r}
 #' Function MI_cor_plot
 #' 
-#' @importFrom
+#' @importFrom plotly plot_ly
 #'
 #' @param MI_threshold_LB  which is the lower bound for the selected MI values
 #' @param MI_threshold_UB which is the upper bound for the selected MI values
@@ -321,7 +323,7 @@ for (i in cor_threshold_values){
 }
   
 
-fig <- plot_ly(plot_input, x = plot_input[,1], y = plot_input[,2], z = plot_input[,3], colors = c('#0C4B8E'))
+fig <- plotly::plot_ly(plot_input, x = plot_input[,1], y = plot_input[,2], z = plot_input[,3], colors = c('#0C4B8E'))
 fig <- fig %>% add_markers()
 fig <- fig %>% layout(scene = list(xaxis = list(title = 'cor_threshold'),
                      yaxis = list(title = 'MI_threshold'),
@@ -337,6 +339,8 @@ return (plot_input)
 
 To create a dataset we should do a call. The rest of the code will run to create documentation.
 ```{r}
+#' @importfrom readr read_csv
+#' @importfrom purrr map_df
 
 X_train = list.files("../data",
                            pattern="X_train",
@@ -356,7 +360,9 @@ y_test = list.files("../data",
 X_train <-purrr::map_df(X_train,~readr::read_csv(.,show_col_types = F))
 X_test <-purrr::map_df(X_test,~readr::read_csv(.,show_col_types = F))
 y_train <-purrr::map_df(y_train,~readr::read_csv(.,show_col_types = F))
+colnames(y_train)[1] = "class"
 y_test <-purrr::map_df(y_test,~readr::read_csv(.,show_col_types = F))
+colnames(y_test)[1] = "class"
   
 ```
 
@@ -374,10 +380,6 @@ And we'll need to document the data set as well and describe it:
 #' A X_train data set
 #' 
 #' @format A data frame of all the features in training set 
-#' \describe{
-#'  \item{features}{there are many features with different names}
-#' }
-#' @source
 #' 
 "X_train"
 ```
@@ -386,10 +388,6 @@ And we'll need to document the data set as well and describe it:
 #' A X_test data set
 #' 
 #' @format A data frame of all the features in test set 
-#' \describe{
-#'  \item{features}{there are many features with different names}
-#' }
-#' @source
 #' 
 "X_test"
 ```
@@ -401,7 +399,6 @@ And we'll need to document the data set as well and describe it:
 #' \describe{
 #'  \item{class}{the class variable}
 #' }
-#' @source
 #' 
 "y_train"
 ```
@@ -413,7 +410,6 @@ And we'll need to document the data set as well and describe it:
 #' \describe{
 #'  \item{class}{the class variable}
 #' }
-#' @source
 #' 
 "y_test"
 ```
@@ -423,10 +419,10 @@ And we'll need to document the data set as well and describe it:
 We finish by running commands that will document, build, and install the package. It may also be a good idea to check the package from within this file.
 
 ```{r}
-litr::document() # <-- use instead of devtools::document()
-devtools::build()
-devtools::install()
-devtools::check(document = FALSE)
+devtools::document() # <-- use instead of devtools::document()
+#devtools::build()
+#devtools::install()
+#devtools::check(document = FALSE)
 ```
 Footer
 © 2023 GitHub, Inc.
